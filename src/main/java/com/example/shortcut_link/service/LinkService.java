@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.shortcut_link.repository.LinkRepository;
 import com.example.shortcut_link.entity.Link;
+import com.example.shortcut_link.exception.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -36,6 +37,22 @@ public class LinkService {
         link.setExpiresAt(expiresAt);
         link = linkRepository.save(link);
         return link.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public String findOriginalURLByShortCode(String shortCode) {
+        Link link = linkRepository.findByShortCode(shortCode)
+        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
+
+        if (!link.IsActive()) {
+            throw new RuntimeException("Link diactivate");
+        }
+
+        if (link.getExpiresAt() != null && link.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Link has expired");
+        }
+
+        return link.getOriginalURL();
     }
 
     private String generateShortCode() {
