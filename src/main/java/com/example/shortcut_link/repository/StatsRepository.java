@@ -17,4 +17,6 @@ public interface StatsRepository extends JpaRepository<Stats, Integer> {
     @Transactional
     @Query("UPDATE Stats s SET s.clickCount = s.clickCount + 1 WHERE s.link.id = :linkId")
     void incrementClickCount(@Param("linkId") Integer linkId);
+
+    void deleteByLinkId(Integer linkId);
 }

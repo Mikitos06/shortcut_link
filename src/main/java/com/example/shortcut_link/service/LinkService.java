@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.shortcut_link.repository.LinkRepository;
 import com.example.shortcut_link.repository.StatsRepository;
 import com.example.shortcut_link.entity.Link;
-import com.example.shortcut_link.entity.Stats;
 import com.example.shortcut_link.exception.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -42,8 +41,9 @@ public class LinkService {
         link.setShortCode(generateShortCode());
         link.setOriginalURL(originalURL);
         link.setExpiresAt(expiresAt);
-        link = linkRepository.save(link);
-        return link.getId();
+        Link savedLink = linkRepository.save(link);
+        statsService.createStatsForLink(savedLink);
+        return savedLink.getId();
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +60,23 @@ public class LinkService {
         }
         statsRepository.incrementClickCount(link.getId());
         return link.getOriginalURL();
+    }
+
+    @Transactional
+    public void toggleLinkActivation(String shortCode, boolean active) {
+        Link link = linkRepository.findByShortCode(shortCode)
+        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
+        link.setIsActive(active);
+    }
+
+    @Transactional
+    public void deleteLink(String shortCode) {
+        Link link = linkRepository.findByShortCode(shortCode)
+        .orElseThrow(() -> new NotFoundException("Ссылка не найдена"));
+        
+        statsRepository.deleteByLinkId(link.getId());
+        
+        linkRepository.delete(link);
     }
 
     private String generateShortCode() {
