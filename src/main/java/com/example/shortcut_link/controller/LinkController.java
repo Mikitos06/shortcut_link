@@ -44,13 +44,13 @@ public class LinkController {
                 .body(new LinkResponse(linkId, "Link created successfully"));
     }
 
-    @DeleteMapping("/api/links/{shortCode}")
+    @DeleteMapping("/links/{shortCode}")
     public ResponseEntity<Void> deleteLink(@PathVariable String shortCode) {
         linkService.deleteLink(shortCode);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/api/links/{shortCode}/toggle")
+    @PatchMapping("/links/{shortCode}/toggle")
     public ResponseEntity<LinkResponse> toggleLinkActivation(
             @PathVariable String shortCode,
             @RequestParam boolean active) {
