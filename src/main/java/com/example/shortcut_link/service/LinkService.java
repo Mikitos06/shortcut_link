@@ -4,7 +4,9 @@ package com.example.shortcut_link.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.shortcut_link.repository.LinkRepository;
+import com.example.shortcut_link.repository.StatsRepository;
 import com.example.shortcut_link.entity.Link;
+import com.example.shortcut_link.entity.Stats;
 import com.example.shortcut_link.exception.NotFoundException;
 
 import java.time.LocalDateTime;
@@ -13,10 +15,14 @@ import java.util.Random;
 @Service
 public class LinkService {
 
+    private final StatsService statsService;
     private final LinkRepository linkRepository;
+    private final StatsRepository statsRepository;
 
-    public LinkService(LinkRepository linkRepository){
+    public LinkService(LinkRepository linkRepository, StatsRepository statsRepository, StatsService statsService){
         this.linkRepository = linkRepository;
+        this.statsRepository = statsRepository;
+        this.statsService = statsService;
     }
 
     @Transactional
@@ -25,8 +31,9 @@ public class LinkService {
         link.setShortCode(shortCode);
         link.setOriginalURL(originalURL);
         link.setExpiresAt(expiresAt);
-        link = linkRepository.save(link);
-        return link.getId();
+        Link savedLink = linkRepository.save(link);
+        statsService.createStatsForLink(savedLink);
+        return savedLink.getId();
     }
 
     @Transactional
@@ -51,7 +58,7 @@ public class LinkService {
         if (link.getExpiresAt() != null && link.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("Link has expired");
         }
-
+        statsRepository.incrementClickCount(link.getId());
         return link.getOriginalURL();
     }
 
