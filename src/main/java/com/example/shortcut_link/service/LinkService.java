@@ -72,7 +72,7 @@ public class LinkService {
     @Transactional
     public void deleteLink(String shortCode) {
         Link link = linkRepository.findByShortCode(shortCode)
-        .orElseThrow(() -> new NotFoundException("Ссылка не найдена"));
+        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
         
         statsRepository.deleteByLinkId(link.getId());
         
