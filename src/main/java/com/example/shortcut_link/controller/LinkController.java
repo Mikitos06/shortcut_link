@@ -5,17 +5,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import com.example.shortcut_link.service.LinkService;
+import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.LinkResponse;
+import com.example.shortcut_link.DTO.StatsResponse;
+
 
 @RestController
 @RequestMapping
 public class LinkController {
 
     private final LinkService linkService;
+    private final StatsService statsService;
 
-    public LinkController(LinkService linkService) {
+    public LinkController(LinkService linkService, StatsService statsService) {
         this.linkService = linkService;
+        this.statsService = statsService;
     }
 
     @GetMapping("/{shortCode}")
@@ -57,4 +62,11 @@ public class LinkController {
         linkService.toggleLinkActivation(shortCode, active);
         return ResponseEntity.ok(new LinkResponse(0, "Link activation toggled"));
     }
+
+    @GetMapping("/links/{shortCode}/stats")
+    public ResponseEntity<StatsResponse> getLinkStats(@PathVariable String shortCode) {
+        StatsResponse response = statsService.getStats(shortCode);
+        return ResponseEntity.ok(response);
+    }
+    
 }

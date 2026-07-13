@@ -1,7 +1,9 @@
 package com.example.shortcut_link.controller;
 
 import com.example.shortcut_link.DTO.LinkRequest;
+import com.example.shortcut_link.DTO.StatsResponse;
 import com.example.shortcut_link.service.LinkService;
+import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ public class TestLinkController {
 
     @MockBean
     private LinkService linkService;
+
+    @MockBean
+    private StatsService statsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -145,5 +150,38 @@ public class TestLinkController {
                 .andExpect(status().isOk());
 
         verify(linkService, times(1)).toggleLinkActivation("ABC123", false);
+    }
+
+    @Test
+    void testGetLinkStats_Success() throws Exception {
+        StatsResponse mockResponse = new StatsResponse();
+        mockResponse.setShortCode("ABC123");
+        mockResponse.setOriginalURL("https://example.com");
+        mockResponse.setClickCount(42L);
+        mockResponse.setCreatedAt(LocalDateTime.now().minusDays(1));
+        mockResponse.setExpiresAt(LocalDateTime.now().plusDays(30));
+        mockResponse.setActive(true);
+
+        when(statsService.getStats("ABC123")).thenReturn(mockResponse);
+
+        mockMvc.perform(get("/links/ABC123/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.shortCode").value("ABC123"))
+                .andExpect(jsonPath("$.originalURL").value("https://example.com"))
+                .andExpect(jsonPath("$.clickCount").value(42))
+                .andExpect(jsonPath("$.active").value(true));
+
+        verify(statsService, times(1)).getStats("ABC123");
+    }
+
+    @Test
+    void testGetLinkStats_NotFound() throws Exception {
+        when(statsService.getStats("INVALID"))
+                .thenThrow(new NotFoundException("Link not found for code: INVALID"));
+
+        mockMvc.perform(get("/links/INVALID/stats"))
+                .andExpect(status().isNotFound());
+
+        verify(statsService, times(1)).getStats("INVALID");
     }
 }
