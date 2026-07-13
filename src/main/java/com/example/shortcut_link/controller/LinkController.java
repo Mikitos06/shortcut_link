@@ -9,6 +9,7 @@ import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.LinkResponse;
 import com.example.shortcut_link.DTO.StatsResponse;
+import com.example.shortcut_link.entity.Link;
 
 
 @RestController
@@ -33,20 +34,21 @@ public class LinkController {
 
     @PostMapping("/links")
     public ResponseEntity<LinkResponse> createLink(@RequestBody LinkRequest request) {
-        int linkId;
+        Link link;
         String shortCode = request.getShortCode();
         if (shortCode!=null){
-            linkId = linkService.createLink(
+            link = linkService.createLink(
                 request.getOriginalURL(),
                 request.getShortCode(),
                 request.getExpiresAt()
             );
         }
         else{
-            linkId = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
+            link = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
         }
+        String baseUrl = "http://localhost:8080";
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new LinkResponse(linkId, "Link created successfully"));
+            .body(new LinkResponse(link, "Link created successfully",baseUrl + "/" + link.getShortCode()));
     }
 
     @DeleteMapping("/links/{shortCode}")
@@ -56,12 +58,14 @@ public class LinkController {
     }
 
     @PatchMapping("/links/{shortCode}/toggle")
-    public ResponseEntity<LinkResponse> toggleLinkActivation(
-            @PathVariable String shortCode,
-            @RequestParam boolean active) {
+    public ResponseEntity<String> toggleLinkActivation(
+        @PathVariable String shortCode,
+        @RequestParam boolean active) {
         linkService.toggleLinkActivation(shortCode, active);
-        return ResponseEntity.ok(new LinkResponse(0, "Link activation toggled"));
-    }
+        Link link = linkService.findLinkByShortCode(shortCode);
+        String message = "Link with short code " + shortCode + " is " + (link.IsActive() ? "active" : "inactive");
+        return ResponseEntity.ok(message);
+}
 
     @GetMapping("/links/{shortCode}/stats")
     public ResponseEntity<StatsResponse> getLinkStats(@PathVariable String shortCode) {

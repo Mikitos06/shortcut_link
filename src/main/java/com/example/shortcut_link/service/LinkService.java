@@ -25,25 +25,25 @@ public class LinkService {
     }
 
     @Transactional
-    public int createLink(String originalURL, String shortCode, LocalDateTime expiresAt) {
+    public Link createLink(String originalURL, String shortCode, LocalDateTime expiresAt) {
         Link link = new Link();
         link.setShortCode(shortCode);
         link.setOriginalURL(originalURL);
         link.setExpiresAt(expiresAt);
         Link savedLink = linkRepository.save(link);
         statsService.createStatsForLink(savedLink);
-        return savedLink.getId();
+        return savedLink;
     }
 
     @Transactional
-    public int createLink(String originalURL,LocalDateTime expiresAt) {
+    public Link createLink(String originalURL,LocalDateTime expiresAt) {
         Link link = new Link();
         link.setShortCode(generateShortCode());
         link.setOriginalURL(originalURL);
         link.setExpiresAt(expiresAt);
         Link savedLink = linkRepository.save(link);
         statsService.createStatsForLink(savedLink);
-        return savedLink.getId();
+        return savedLink;
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +79,12 @@ public class LinkService {
         linkRepository.delete(link);
     }
 
+    public Link findLinkByShortCode(String shortCode){
+        Link link = linkRepository.findByShortCode(shortCode)
+        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
+        return link;
+    }
+
     private String generateShortCode() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
@@ -88,4 +94,5 @@ public class LinkService {
         }
         return sb.toString();
     }
+    
 }

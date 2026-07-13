@@ -2,6 +2,7 @@ package com.example.shortcut_link.controller;
 
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.StatsResponse;
+import com.example.shortcut_link.entity.Link;
 import com.example.shortcut_link.service.LinkService;
 import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.exception.NotFoundException;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,50 +28,69 @@ public class TestLinkController {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private LinkService linkService;
 
-    @MockBean
+    @MockitoBean
     private StatsService statsService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     private LinkRequest linkRequest;
+    private Link mockLink;
+    private LocalDateTime expiresAt;
 
     @BeforeEach
     void setup() {
         linkRequest = new LinkRequest();
         linkRequest.setOriginalURL("https://example.com");
-        linkRequest.setExpiresAt(LocalDateTime.now().plusDays(30));
+        expiresAt = LocalDateTime.now().plusDays(30);
+        linkRequest.setExpiresAt(expiresAt);
+
+        mockLink = mock(Link.class);
+        when(mockLink.getShortCode()).thenReturn("ABC123");
+        when(mockLink.getOriginalURL()).thenReturn("https://example.com");
+        when(mockLink.getCreatedAt()).thenReturn(LocalDateTime.now());
+        when(mockLink.getExpiresAt()).thenReturn(expiresAt);
+        when(mockLink.IsActive()).thenReturn(true);
     }
 
     @Test
     void testCreateLink_Success() throws Exception {
-        when(linkService.createLink(anyString(), any(LocalDateTime.class)))
-                .thenReturn(1);
+    when(linkService.createLink(anyString(), any(LocalDateTime.class)))
+        .thenReturn(mockLink);
 
-        mockMvc.perform(post("/links")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(linkRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("Link created successfully"));
+    mockMvc.perform(post("/links")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(linkRequest)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.message").value("Link created successfully"))
+        .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/ABC123"));
 
-        verify(linkService, times(1)).createLink(anyString(), any(LocalDateTime.class));
+    verify(linkService, times(1)).createLink(anyString(), any(LocalDateTime.class));
     }
 
     @Test
     void testCreateLinkWithCustomCode_Success() throws Exception {
-        linkRequest.setShortCode("ABC123");
+        linkRequest.setShortCode("CUSTOM");
+        
+        Link customMockLink = mock(Link.class);
+        when(customMockLink.getShortCode()).thenReturn("CUSTOM");
+        when(customMockLink.getOriginalURL()).thenReturn("https://example.com");
+        when(customMockLink.getCreatedAt()).thenReturn(LocalDateTime.now());
+        when(customMockLink.getExpiresAt()).thenReturn(expiresAt);
+        when(customMockLink.IsActive()).thenReturn(true);
 
         when(linkService.createLink(anyString(), anyString(), any(LocalDateTime.class)))
-                .thenReturn(1);
+                .thenReturn(customMockLink);
 
         mockMvc.perform(post("/links")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(linkRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("Link created successfully"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(linkRequest)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.message").value("Link created successfully"))
+            .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/CUSTOM"));
 
         verify(linkService, times(1)).createLink(anyString(), anyString(), any(LocalDateTime.class));
     }
@@ -86,7 +106,6 @@ public class TestLinkController {
 
         verify(linkService, times(1)).findOriginalURLByShortCode("ABC123");
     }
-
 
     @Test
     void testRedirectToOriginalURL_NotFound() throws Exception {
@@ -132,24 +151,35 @@ public class TestLinkController {
     }
 
     @Test
-    void testToggleLinkActivation_Success() throws Exception {
+    void testToggleLinkActivation_Activate() throws Exception {
+        Link activeMockLink = mock(Link.class);
+        when(activeMockLink.IsActive()).thenReturn(true);
+        
         doNothing().when(linkService).toggleLinkActivation("ABC123", true);
+        when(linkService.findLinkByShortCode("ABC123")).thenReturn(activeMockLink);
 
         mockMvc.perform(patch("/links/ABC123/toggle?active=true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Link activation toggled"));
+                .andExpect(content().string("Link with short code ABC123 is active"));
 
         verify(linkService, times(1)).toggleLinkActivation("ABC123", true);
+        verify(linkService, times(1)).findLinkByShortCode("ABC123");
     }
 
     @Test
     void testToggleLinkActivation_Deactivate() throws Exception {
+        Link inactiveMockLink = mock(Link.class);
+        when(inactiveMockLink.IsActive()).thenReturn(false);
+        
         doNothing().when(linkService).toggleLinkActivation("ABC123", false);
+        when(linkService.findLinkByShortCode("ABC123")).thenReturn(inactiveMockLink);
 
         mockMvc.perform(patch("/links/ABC123/toggle?active=false"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(content().string("Link with short code ABC123 is inactive"));
 
         verify(linkService, times(1)).toggleLinkActivation("ABC123", false);
+        verify(linkService, times(1)).findLinkByShortCode("ABC123");
     }
 
     @Test
