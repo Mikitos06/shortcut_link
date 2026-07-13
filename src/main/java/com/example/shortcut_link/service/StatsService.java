@@ -2,7 +2,6 @@ package com.example.shortcut_link.service;
 
 import com.example.shortcut_link.entity.Link;
 import com.example.shortcut_link.entity.Stats;
-import com.example.shortcut_link.exception.NotFoundException;
 import com.example.shortcut_link.repository.StatsRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
