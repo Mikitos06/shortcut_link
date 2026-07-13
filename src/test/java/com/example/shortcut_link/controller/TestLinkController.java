@@ -3,12 +3,16 @@ package com.example.shortcut_link.controller;
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.StatsResponse;
 import com.example.shortcut_link.entity.Link;
+import com.example.shortcut_link.security.JwtAuthenticationFilter;
+import com.example.shortcut_link.security.JwtUtil;
+import com.example.shortcut_link.security.CustomUserDetailsService;
 import com.example.shortcut_link.service.LinkService;
 import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
@@ -23,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LinkController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class TestLinkController {
 
     @Autowired
@@ -33,6 +38,15 @@ public class TestLinkController {
 
     @MockitoBean
     private StatsService statsService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -54,21 +68,22 @@ public class TestLinkController {
         when(mockLink.getCreatedAt()).thenReturn(LocalDateTime.now());
         when(mockLink.getExpiresAt()).thenReturn(expiresAt);
         when(mockLink.IsActive()).thenReturn(true);
+        when(mockLink.getId()).thenReturn(1);
     }
 
     @Test
     void testCreateLink_Success() throws Exception {
-    when(linkService.createLink(anyString(), any(LocalDateTime.class)))
-        .thenReturn(mockLink);
+        when(linkService.createLink(anyString(), any(LocalDateTime.class)))
+                .thenReturn(mockLink);
 
-    mockMvc.perform(post("/links")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(linkRequest)))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.message").value("Link created successfully"))
-        .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/ABC123"));
+        mockMvc.perform(post("/links")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(linkRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Link created successfully"))
+                .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/ABC123"));
 
-    verify(linkService, times(1)).createLink(anyString(), any(LocalDateTime.class));
+        verify(linkService, times(1)).createLink(anyString(), any(LocalDateTime.class));
     }
 
     @Test
@@ -81,16 +96,17 @@ public class TestLinkController {
         when(customMockLink.getCreatedAt()).thenReturn(LocalDateTime.now());
         when(customMockLink.getExpiresAt()).thenReturn(expiresAt);
         when(customMockLink.IsActive()).thenReturn(true);
+        when(customMockLink.getId()).thenReturn(2);
 
         when(linkService.createLink(anyString(), anyString(), any(LocalDateTime.class)))
                 .thenReturn(customMockLink);
 
         mockMvc.perform(post("/links")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(linkRequest)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.message").value("Link created successfully"))
-            .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/CUSTOM"));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(linkRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Link created successfully"))
+                .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/CUSTOM"));
 
         verify(linkService, times(1)).createLink(anyString(), anyString(), any(LocalDateTime.class));
     }
@@ -154,6 +170,8 @@ public class TestLinkController {
     void testToggleLinkActivation_Activate() throws Exception {
         Link activeMockLink = mock(Link.class);
         when(activeMockLink.IsActive()).thenReturn(true);
+        when(activeMockLink.getShortCode()).thenReturn("ABC123");
+        when(activeMockLink.getId()).thenReturn(1);
         
         doNothing().when(linkService).toggleLinkActivation("ABC123", true);
         when(linkService.findLinkByShortCode("ABC123")).thenReturn(activeMockLink);
@@ -170,6 +188,8 @@ public class TestLinkController {
     void testToggleLinkActivation_Deactivate() throws Exception {
         Link inactiveMockLink = mock(Link.class);
         when(inactiveMockLink.IsActive()).thenReturn(false);
+        when(inactiveMockLink.getShortCode()).thenReturn("ABC123");
+        when(inactiveMockLink.getId()).thenReturn(1);
         
         doNothing().when(linkService).toggleLinkActivation("ABC123", false);
         when(linkService.findLinkByShortCode("ABC123")).thenReturn(inactiveMockLink);

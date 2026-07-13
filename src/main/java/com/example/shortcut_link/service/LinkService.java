@@ -1,12 +1,16 @@
 package com.example.shortcut_link.service;
 
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.example.shortcut_link.entity.Link;
+import com.example.shortcut_link.entity.User;
+import com.example.shortcut_link.exception.NotFoundException;
 import com.example.shortcut_link.repository.LinkRepository;
 import com.example.shortcut_link.repository.StatsRepository;
-import com.example.shortcut_link.entity.Link;
-import com.example.shortcut_link.exception.NotFoundException;
+import com.example.shortcut_link.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -17,19 +21,27 @@ public class LinkService {
     private final StatsService statsService;
     private final LinkRepository linkRepository;
     private final StatsRepository statsRepository;
+    private final UserRepository userRepository;
 
-    public LinkService(LinkRepository linkRepository, StatsRepository statsRepository, StatsService statsService){
+    public LinkService(LinkRepository linkRepository, StatsRepository statsRepository, StatsService statsService,UserRepository userRepository){
         this.linkRepository = linkRepository;
         this.statsRepository = statsRepository;
         this.statsService = statsService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
     public Link createLink(String originalURL, String shortCode, LocalDateTime expiresAt) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
         Link link = new Link();
-        link.setShortCode(shortCode);
         link.setOriginalURL(originalURL);
+        link.setShortCode(shortCode);
         link.setExpiresAt(expiresAt);
+        link.setUser(user);
         Link savedLink = linkRepository.save(link);
         statsService.createStatsForLink(savedLink);
         return savedLink;

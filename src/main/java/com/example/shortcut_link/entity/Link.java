@@ -25,6 +25,10 @@ public class Link {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public Integer getId() { return id; }
 
     public String getOriginalURL() { return originalURL; }
@@ -41,6 +45,9 @@ public class Link {
 
     public Boolean IsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) {this.user = user;}
 
 }
 
