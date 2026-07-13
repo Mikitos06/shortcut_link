@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import com.example.shortcut_link.service.LinkService;
 import com.example.shortcut_link.service.StatsService;
+
+import jakarta.validation.Valid;
+
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.LinkResponse;
 import com.example.shortcut_link.DTO.StatsResponse;
@@ -33,7 +36,7 @@ public class LinkController {
     }
 
     @PostMapping("/links")
-    public ResponseEntity<LinkResponse> createLink(@RequestBody LinkRequest request) {
+    public ResponseEntity<LinkResponse> createLink(@Valid @RequestBody LinkRequest request) {
         Link link;
         String shortCode = request.getShortCode();
         if (shortCode!=null){

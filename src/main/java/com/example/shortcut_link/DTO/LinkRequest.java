@@ -2,7 +2,10 @@ package com.example.shortcut_link.DTO;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.validator.constraints.URL;
+
 public class LinkRequest {
+    @URL(message = "Invalid URL format")
     private String originalURL;
     private String shortCode;
     private LocalDateTime expiresAt;
