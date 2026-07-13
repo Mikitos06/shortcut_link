@@ -23,14 +23,6 @@ public class StatsService {
         statsRepository.save(stats);
     }
 
-    @Transactional
-    public void incrementClickCount(Link link) {
-        Stats stats = statsRepository.findByLinkId(link.getId())
-        .orElseThrow(() -> new NotFoundException("Statistics for the link not found."));
-        stats.incrementClick();
-        statsRepository.save(stats);
-    }
-
     @Transactional(readOnly = true)
     public Long getClickCount(Link link) {
         return statsRepository.findByLinkId(link.getId())
