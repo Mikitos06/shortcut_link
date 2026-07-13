@@ -61,7 +61,7 @@ public class TestLinkController {
         when(linkService.createLink(anyString(), anyString(), any(LocalDateTime.class)))
                 .thenReturn(1);
 
-        mockMvc.perform(post("/links/custom")
+        mockMvc.perform(post("/links")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(linkRequest)))
                 .andExpect(status().isCreated())

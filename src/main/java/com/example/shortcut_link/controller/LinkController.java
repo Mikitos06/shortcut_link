@@ -28,18 +28,18 @@ public class LinkController {
 
     @PostMapping("/links")
     public ResponseEntity<LinkResponse> createLink(@RequestBody LinkRequest request) {
-        int linkId = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new LinkResponse(linkId, "Link created successfully"));
-    }
-
-    @PostMapping("/links/custom")
-    public ResponseEntity<LinkResponse> createLinkWithCustomCode(@RequestBody LinkRequest request) {
-        int linkId = linkService.createLink(
+        int linkId;
+        String shortCode = request.getShortCode();
+        if (shortCode!=null){
+            linkId = linkService.createLink(
                 request.getOriginalURL(),
                 request.getShortCode(),
                 request.getExpiresAt()
-        );
+            );
+        }
+        else{
+            linkId = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new LinkResponse(linkId, "Link created successfully"));
     }
