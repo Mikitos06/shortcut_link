@@ -4,6 +4,7 @@ package com.example.shortcut_link.service;
 import com.example.shortcut_link.entity.Link;
 import com.example.shortcut_link.entity.User;
 import com.example.shortcut_link.exception.NotFoundException;
+import com.example.shortcut_link.exception.ShortCodeAlreadyExistsException;
 import com.example.shortcut_link.repository.LinkRepository;
 import com.example.shortcut_link.repository.StatsRepository;
 import com.example.shortcut_link.repository.UserRepository;
@@ -35,7 +36,10 @@ public class LinkService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new RuntimeException("User not found"));
+        if (linkRepository.findByShortCode(shortCode).isPresent()) {
+        throw new ShortCodeAlreadyExistsException("Short code already exists: ");
+        }
 
         Link link = new Link();
         link.setOriginalURL(originalURL);

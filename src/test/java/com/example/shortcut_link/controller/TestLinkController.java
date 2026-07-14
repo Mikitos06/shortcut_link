@@ -9,6 +9,7 @@ import com.example.shortcut_link.security.CustomUserDetailsService;
 import com.example.shortcut_link.service.LinkService;
 import com.example.shortcut_link.service.StatsService;
 import com.example.shortcut_link.exception.NotFoundException;
+import com.example.shortcut_link.exception.ShortCodeAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,5 +234,28 @@ public class TestLinkController {
                 .andExpect(status().isNotFound());
 
         verify(statsService, times(1)).getStats("INVALID");
+    }
+
+    @Test
+    void testFirstLinkStaysActiveWhenDuplicateAttempted() throws Exception {
+        linkRequest.setShortCode("CODE");
+
+        when(linkService.createLink(anyString(), eq("CODE"), any(LocalDateTime.class)))
+            .thenReturn(mockLink);
+
+        mockMvc.perform(post("/links")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(linkRequest)))
+            .andExpect(status().isCreated());
+
+        when(linkService.createLink(anyString(), eq("CODE"), any(LocalDateTime.class)))
+                .thenThrow(new ShortCodeAlreadyExistsException("Short code already exists"));
+
+        mockMvc.perform(post("/links")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(linkRequest)))
+                .andExpect(status().isConflict());
+
+        verify(linkService, times(2)).createLink(anyString(), eq("CODE"), any(LocalDateTime.class));
     }
 }
