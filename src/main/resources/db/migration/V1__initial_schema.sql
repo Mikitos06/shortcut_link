@@ -1,0 +1,15 @@
+CREATE TABLE links (
+    id SERIAL PRIMARY KEY,
+    original_url VARCHAR(2048) NOT NULL,
+    short_code VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE stats (
+    id SERIAL PRIMARY KEY,
+    link_id INTEGER NOT NULL UNIQUE,
+    click_count BIGINT NOT NULL DEFAULT 0,
+    CONSTRAINT fk_stats_link FOREIGN KEY (link_id) REFERENCES links(id)
+);
