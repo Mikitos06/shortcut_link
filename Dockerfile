@@ -6,6 +6,7 @@ COPY pom.xml .
 RUN mvn dependency:go-offline
 
 COPY src ./src
+COPY frontend ./frontend
 RUN mvn package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine

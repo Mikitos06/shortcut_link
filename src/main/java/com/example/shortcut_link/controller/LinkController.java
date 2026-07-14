@@ -3,7 +3,6 @@ package com.example.shortcut_link.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 import com.example.shortcut_link.service.LinkService;
 import com.example.shortcut_link.service.StatsService;
 
@@ -16,7 +15,7 @@ import com.example.shortcut_link.entity.Link;
 
 
 @RestController
-@RequestMapping
+@RequestMapping("/api")
 public class LinkController {
 
     private final LinkService linkService;
@@ -25,14 +24,6 @@ public class LinkController {
     public LinkController(LinkService linkService, StatsService statsService) {
         this.linkService = linkService;
         this.statsService = statsService;
-    }
-
-    @GetMapping("/{shortCode}")
-    public RedirectView redirectToOriginalURL(@PathVariable String shortCode) {
-        String originalURL = linkService.findOriginalURLByShortCode(shortCode);
-        RedirectView redirectView = new RedirectView();
-        redirectView.setUrl(originalURL);
-        return redirectView;
     }
 
     @PostMapping("/links")
@@ -49,7 +40,7 @@ public class LinkController {
         else{
             link = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
         }
-        String baseUrl = "http://localhost:8080";
+        String baseUrl = "http://localhost:8080/r/";
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new LinkResponse(link, "Link created successfully",baseUrl + "/" + link.getShortCode()));
     }
