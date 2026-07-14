@@ -175,14 +175,14 @@ public class TestLinkController {
         when(activeMockLink.getId()).thenReturn(1);
         
         doNothing().when(linkService).toggleLinkActivation("ABC123", true);
-        when(linkService.findLinkByShortCode("ABC123")).thenReturn(activeMockLink);
+        when(linkService.findLinkByShortCodeAndValidateOwner("ABC123")).thenReturn(activeMockLink);
 
         mockMvc.perform(patch("/links/ABC123/toggle?active=true"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Link with short code ABC123 is active"));
 
         verify(linkService, times(1)).toggleLinkActivation("ABC123", true);
-        verify(linkService, times(1)).findLinkByShortCode("ABC123");
+        verify(linkService, times(1)).findLinkByShortCodeAndValidateOwner("ABC123");
     }
 
     @Test
@@ -193,14 +193,14 @@ public class TestLinkController {
         when(inactiveMockLink.getId()).thenReturn(1);
         
         doNothing().when(linkService).toggleLinkActivation("ABC123", false);
-        when(linkService.findLinkByShortCode("ABC123")).thenReturn(inactiveMockLink);
+        when(linkService.findLinkByShortCodeAndValidateOwner("ABC123")).thenReturn(inactiveMockLink);
 
         mockMvc.perform(patch("/links/ABC123/toggle?active=false"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Link with short code ABC123 is inactive"));
 
         verify(linkService, times(1)).toggleLinkActivation("ABC123", false);
-        verify(linkService, times(1)).findLinkByShortCode("ABC123");
+        verify(linkService, times(1)).findLinkByShortCodeAndValidateOwner("ABC123");
     }
 
     @Test

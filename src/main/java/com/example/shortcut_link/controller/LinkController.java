@@ -65,7 +65,7 @@ public class LinkController {
         @PathVariable String shortCode,
         @RequestParam boolean active) {
         linkService.toggleLinkActivation(shortCode, active);
-        Link link = linkService.findLinkByShortCode(shortCode);
+        Link link = linkService.findLinkByShortCodeAndValidateOwner(shortCode);
         String message = "Link with short code " + shortCode + " is " + (link.IsActive() ? "active" : "inactive");
         return ResponseEntity.ok(message);
 }

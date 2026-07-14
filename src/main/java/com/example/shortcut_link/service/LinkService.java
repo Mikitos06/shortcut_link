@@ -80,25 +80,30 @@ public class LinkService {
 
     @Transactional
     public void toggleLinkActivation(String shortCode, boolean active) {
-        Link link = linkRepository.findByShortCode(shortCode)
-        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
+        Link link = findLinkByShortCodeAndValidateOwner(shortCode);
         link.setIsActive(active);
     }
 
     @Transactional
     public void deleteLink(String shortCode) {
-        Link link = linkRepository.findByShortCode(shortCode)
-        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
-        
+        Link link = findLinkByShortCodeAndValidateOwner(shortCode);
         statsRepository.deleteByLinkId(link.getId());
-        
         linkRepository.delete(link);
     }
 
-    public Link findLinkByShortCode(String shortCode){
-        Link link = linkRepository.findByShortCode(shortCode)
-        .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
-        return link;
+    public Link findLinkByShortCodeAndValidateOwner(String shortCode) {
+    Link link = linkRepository.findByShortCode(shortCode)
+    .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
+
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || !auth.isAuthenticated()) {
+        throw new RuntimeException("User not authenticated");
+    }
+    String currentUsername = auth.getName();
+    if (link.getUser() == null || !link.getUser().getUsername().equals(currentUsername)) {
+        throw new RuntimeException("You do not have permission to modify this link"); 
+    }
+    return link;
     }
 
     private String generateShortCode() {
