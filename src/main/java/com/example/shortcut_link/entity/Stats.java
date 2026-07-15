@@ -17,6 +17,8 @@ public class Stats {
     @Column(name = "click_count", nullable = false)
     private Long clickCount = 0L;
 
+    public Stats() {}
+
     public Stats(Link link) {
         this.link = link;
         this.clickCount = 0L;

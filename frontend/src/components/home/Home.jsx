@@ -1,5 +1,10 @@
-import { useState } from 'react';
-import { Typography, Paper, TextField, Button, Stack, Checkbox, FormControlLabel, Box, Alert, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import {
+  Typography, Paper, TextField, Button, Stack, Checkbox, FormControlLabel,
+  Box, Alert, CircularProgress, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Switch, IconButton
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../../api';
 import './Home.css';
 
@@ -13,6 +18,26 @@ function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const [links, setLinks] = useState([]);
+  const [loadingLinks, setLoadingLinks] = useState(false);
+
+  const loadLinks = async () => {
+    setLoadingLinks(true);
+    try {
+      const response = await api.Links.getAllLinks();
+      setLinks(response.data);
+    } catch (err) {
+      console.error('Failed to load links', err);
+    } finally {
+      setLoadingLinks(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLinks();
+  }, []);
 
   const handleGenerate = async () => {
     const newErrors = { url: false, customCode: false };
@@ -41,10 +66,30 @@ function Home() {
         message: response.data.message,
         expiresAt: response.data.link?.expiresAt || null,
       });
+      loadLinks();
     } catch (error) {
       setErrorMsg(error.response?.data?.message || 'Failed to generate short link');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggle = async (shortCode, currentActive) => {
+    try {
+      await api.Links.toggleLink(shortCode, !currentActive);
+      loadLinks();
+    } catch (err) {
+      console.error('Toggle failed', err);
+    }
+  };
+
+  const handleDelete = async (shortCode) => {
+    if (!window.confirm('Delete this link?')) return;
+    try {
+      await api.Links.deleteLink(shortCode);
+      loadLinks();
+    } catch (err) {
+      console.error('Delete failed', err);
     }
   };
 
@@ -85,6 +130,12 @@ function Home() {
             </Button>
           </Stack>
         </Paper>
+        <LinkTable
+          links={links}
+          loading={loadingLinks}
+          onToggle={handleToggle}
+          onDelete={handleDelete}
+        />
       </>
     );
   }
@@ -177,7 +228,78 @@ function Home() {
           </Box>
         </Stack>
       </Paper>
+
+      <LinkTable
+        links={links}
+        loading={loadingLinks}
+        onToggle={handleToggle}
+        onDelete={handleDelete}
+      />
     </>
+  );
+}
+
+function LinkTable({ links, loading, onToggle, onDelete }) {
+  return (
+    <Box sx={{ width: '90%', maxWidth: 700, mx: 'auto', mt: 4 }}>
+      <Typography variant="h5" gutterBottom>Your Short Links</Typography>
+      <TableContainer component={Paper} sx={{ borderRadius: '32px' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>#</TableCell>
+              <TableCell>Original Link</TableCell>
+              <TableCell>Short Link</TableCell>
+              <TableCell align="center">Redirects</TableCell>
+              <TableCell align="center">Active</TableCell>
+              <TableCell align="center">Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress size={24} />
+                </TableCell>
+              </TableRow>
+            ) : links.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">No links yet</TableCell>
+              </TableRow>
+            ) : (
+              links.map((link, index) => (
+                <TableRow key={link.id}>
+                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>
+                    <a href={link.originalURL} target="_blank" rel="noopener noreferrer" style={{ wordBreak: 'break-all' }}>
+                      {link.originalURL}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <a href={`http://localhost:8080/r/${link.shortCode}`} target="_blank" rel="noopener noreferrer">
+                      {link.shortCode}
+                    </a>
+                  </TableCell>
+                  <TableCell align="center">{link.clickCount}</TableCell>
+                  <TableCell align="center">
+                    <Switch
+                      checked={link.isActive}
+                      onChange={() => onToggle(link.shortCode, link.isActive)}
+                      color="primary"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <IconButton color="error" onClick={() => onDelete(link.shortCode)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
 
