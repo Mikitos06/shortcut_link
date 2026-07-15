@@ -1,0 +1,21 @@
+.inactive-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inactive-paper {
+  padding: 32px;
+  border-radius: 32px;
+  max-width: 500px;
+  text-align: center;
+}
+
+.inactive-button-wrapper {
+  margin-top: 24px;
+}
