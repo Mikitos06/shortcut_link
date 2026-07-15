@@ -1,5 +1,5 @@
 .create-link-paper {
-  border-radius: 32px;
+  border-radius: 32px !important;
   margin: 10px auto;
   padding: 32px;
   width: 90%;
