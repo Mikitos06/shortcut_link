@@ -1,5 +1,7 @@
 package com.example.shortcut_link.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +10,7 @@ import com.example.shortcut_link.service.StatsService;
 
 import jakarta.validation.Valid;
 
+import com.example.shortcut_link.DTO.LinkListResponse;
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.LinkResponse;
 import com.example.shortcut_link.DTO.StatsResponse;
@@ -66,5 +69,9 @@ public class LinkController {
         StatsResponse response = statsService.getStats(shortCode);
         return ResponseEntity.ok(response);
     }
-    
+
+    @GetMapping("/links")
+    public ResponseEntity<List<LinkListResponse>> getAllLinks() {
+        return ResponseEntity.ok(linkService.getLinksForCurrentUser());
+    }
 }
