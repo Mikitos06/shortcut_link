@@ -47,7 +47,6 @@ function Register() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f9fafb',
         padding: 3,
       }}
     >

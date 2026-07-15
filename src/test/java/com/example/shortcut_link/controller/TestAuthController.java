@@ -70,7 +70,7 @@ public class TestAuthController {
         when(authService.register("testuser", "password123", "test@example.com"))
                 .thenReturn(mockUser);
 
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/api/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isOk())
@@ -84,7 +84,7 @@ public class TestAuthController {
         when(authService.register(anyString(), anyString(), anyString()))
                 .thenThrow(new RuntimeException("Username already taken"));
 
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/api/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().is5xxServerError());
@@ -97,7 +97,7 @@ public class TestAuthController {
         when(authService.register(anyString(), anyString(), anyString()))
                 .thenThrow(new RuntimeException("Email already registered"));
 
-        mockMvc.perform(post("/register")
+        mockMvc.perform(post("/api/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().is5xxServerError());
@@ -111,7 +111,7 @@ public class TestAuthController {
                 .thenReturn(mockUser);
         when(jwtUtil.generateToken("testuser")).thenReturn("fake-jwt-token");
 
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/api/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
@@ -123,21 +123,21 @@ public class TestAuthController {
 
     @Test
     void testLogin_InvalidCredentials() throws Exception {
-        when(authService.authenticate(anyString(), anyString()))
-                .thenThrow(new RuntimeException("Invalid username or password"));
+    when(authService.authenticate(anyString(), anyString()))
+            .thenThrow(new IllegalArgumentException("Invalid username or password"));
 
-        mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().is5xxServerError());
+    mockMvc.perform(post("/api/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(loginRequest)))
+            .andExpect(status().isBadRequest());
 
-        verify(authService, times(1)).authenticate(anyString(), anyString());
+    verify(authService, times(1)).authenticate(anyString(), anyString());
     }
 
     @Test
     void testLogin_MissingFields() throws Exception {
         LoginRequest emptyRequest = new LoginRequest();
-        mockMvc.perform(post("/login")
+        mockMvc.perform(post("/api/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(emptyRequest)))
                 .andExpect(status().isBadRequest());
