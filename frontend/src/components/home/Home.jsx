@@ -7,8 +7,10 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import api from '../../api';
 import './Home.css';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
+  const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [customAlias, setCustomAlias] = useState(false);
   const [customCode, setCustomCode] = useState('');
@@ -35,9 +37,14 @@ function Home() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadLinks();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { replace: true });
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadLinks();
+    }
+  }, [navigate]);
 
   const handleGenerate = async () => {
     const newErrors = { url: false, customCode: false };
