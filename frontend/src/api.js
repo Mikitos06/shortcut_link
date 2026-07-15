@@ -47,5 +47,9 @@ export default {
   },
   Links: {
     createLink: (data) => api.post('/links', data),
+    deleteLink: (shortCode) => api.delete(`/links/${shortCode}`),
+    toggleLink: (shortCode, active) => api.patch(`/links/${shortCode}/toggle?active=${active}`),
+    getStats: (shortCode) => api.get(`/links/${shortCode}/stats`),
+    getAllLinks: () => api.get('/links'),
   },
 };
