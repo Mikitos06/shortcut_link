@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Typography, Paper, TextField, Button, Stack, Checkbox, FormControlLabel, Box, Alert, CircularProgress } from '@mui/material';
-import api from '../api';
+import api from '../../api';
 import './Home.css';
 
 function Home() {
@@ -62,8 +62,8 @@ function Home() {
   if (result) {
     return (
       <>
-        <Typography variant="h3" className="custom-title">Shortcut Link</Typography>
-        <Paper elevation={3} className="custom-paper">
+        <Typography variant="h3" className="home-title">Shortcut Link</Typography>
+        <Paper elevation={3} className="create-link-paper">
           <Stack spacing={3}>
             <Typography variant="h6" fontWeight="bold">Your Shortlink:</Typography>
             <Typography
@@ -71,7 +71,7 @@ function Home() {
               component="a"
               href={result.shortUrl}
               target="_blank"
-              className="custom-result-link"
+              className="result-link"
             >
               {result.shortUrl}
             </Typography>
@@ -80,7 +80,7 @@ function Home() {
                 Expires at: {new Date(result.expiresAt).toLocaleString()}
               </Typography>
             )}
-            <Button variant="contained" color="primary" onClick={handleReset} className="custom-button" disableElevation>
+            <Button variant="contained" color="primary" onClick={handleReset} className="create-link-button" disableElevation>
               Generate Another
             </Button>
           </Stack>
@@ -91,8 +91,8 @@ function Home() {
 
   return (
     <>
-      <Typography variant="h3" className="custom-title">Shortcut Link</Typography>
-      <Paper elevation={3} className="custom-paper">
+      <Typography variant="h3" className="home-title">Shortcut Link</Typography>
+      <Paper elevation={3} className="create-link-paper">
         <Stack spacing={3}>
           <TextField
             label="Input Your URL"
@@ -103,7 +103,7 @@ function Home() {
             error={errors.url}
             helperText={errors.url && 'URL is required'}
             disabled={loading}
-            className="custom-input"
+            className="create-link-input"
           />
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
@@ -129,7 +129,7 @@ function Home() {
                 error={errors.customCode}
                 helperText={errors.customCode && 'Short code is required'}
                 disabled={loading}
-                className="custom-input"
+                className="create-link-input"
               />
             )}
           </Stack>
@@ -156,7 +156,7 @@ function Home() {
                 onChange={(e) => setExpirationDate(e.target.value)}
                 disabled={loading}
                 InputLabelProps={{ shrink: true }}
-                className="custom-input"
+                className="create-link-input"
               />
             )}
           </Stack>
@@ -169,7 +169,7 @@ function Home() {
               color="primary"
               onClick={handleGenerate}
               disabled={loading}
-              className="custom-button"
+              className="create-link-button"
               disableElevation
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate'}
