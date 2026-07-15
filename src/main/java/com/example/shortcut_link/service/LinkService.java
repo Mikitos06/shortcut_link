@@ -1,7 +1,9 @@
 package com.example.shortcut_link.service;
 
 
+import com.example.shortcut_link.DTO.LinkListResponse;
 import com.example.shortcut_link.entity.Link;
+import com.example.shortcut_link.entity.Stats;
 import com.example.shortcut_link.entity.User;
 import com.example.shortcut_link.exception.NotFoundException;
 import com.example.shortcut_link.exception.ShortCodeAlreadyExistsException;
@@ -14,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class LinkService {
@@ -118,6 +122,29 @@ public class LinkService {
         throw new RuntimeException("You do not have permission to modify this link"); 
     }
     return link;
+    }
+
+   @Transactional(readOnly = true)
+    public List<LinkListResponse> getLinksForCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+
+        List<Link> links = linkRepository.findByUser(user);
+        return links.stream().map(link -> {
+            Long clickCount = statsRepository.findByLinkId(link.getId())
+                .map(Stats::getClickCount)
+                .orElse(0L);
+            return new LinkListResponse(
+                link.getId(),
+                link.getOriginalURL(),
+                link.getShortCode(),
+                clickCount.intValue(),
+                link.IsActive(),
+                link.getExpiresAt()
+            );
+        }).collect(Collectors.toList());
     }
 
     private String generateShortCode() {
