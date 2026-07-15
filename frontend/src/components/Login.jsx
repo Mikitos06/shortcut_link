@@ -25,7 +25,7 @@ function Login() {
     try {
       const response = await api.Auth.login({ username, password });
       localStorage.setItem('token', response.data.token);
-      navigate('/');
+      navigate('/home');
     } catch (error) {
       console.error('Login error:', error.response?.data?.message || error.message);
         if (error.response?.status === 401 || error.response?.status === 400) {
@@ -33,7 +33,6 @@ function Login() {
       } else {
         setError(error.response?.data?.message || 'Something went wrong. Please try again.');
       }
-      setError(message);
     }
   };
 
