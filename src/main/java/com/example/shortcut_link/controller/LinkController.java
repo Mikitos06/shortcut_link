@@ -42,7 +42,7 @@ public class LinkController {
         }
         String baseUrl = "http://localhost:8080/r/";
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new LinkResponse(link, "Link created successfully",baseUrl + "/" + link.getShortCode()));
+            .body(new LinkResponse(link, "Link created successfully",baseUrl + link.getShortCode()));
     }
 
     @DeleteMapping("/links/{shortCode}")

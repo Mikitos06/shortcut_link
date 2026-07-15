@@ -45,4 +45,7 @@ export default {
     login: (credentials) => api.post('/login', credentials),
     register: (userData) => api.post('/register', userData),
   },
+  Links: {
+    createLink: (data) => api.post('/links', data),
+  },
 };

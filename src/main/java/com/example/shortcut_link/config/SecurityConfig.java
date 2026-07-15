@@ -24,11 +24,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/assets/**", "/manifest.json", "/favicon.ico", "/login", "/register")
-                .permitAll()
-                .requestMatchers("/api/register", "/api/login")
-                .permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/register", "/api/login").permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .requestMatchers("/r/**").permitAll()
+                .anyRequest().permitAll()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

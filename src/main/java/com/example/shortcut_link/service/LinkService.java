@@ -45,6 +45,8 @@ public class LinkService {
         link.setOriginalURL(originalURL);
         link.setShortCode(shortCode);
         link.setExpiresAt(expiresAt);
+        link.setIsActive(true);
+        link.setCreatedAt(LocalDateTime.now());
         link.setUser(user);
         Link savedLink = linkRepository.save(link);
         statsService.createStatsForLink(savedLink);
@@ -53,16 +55,28 @@ public class LinkService {
 
     @Transactional
     public Link createLink(String originalURL,LocalDateTime expiresAt) {
+        String shortCode = generateShortCode();
+        while (linkRepository.findByShortCode(shortCode).isPresent()) {
+            shortCode = generateShortCode();
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
         Link link = new Link();
-        link.setShortCode(generateShortCode());
         link.setOriginalURL(originalURL);
+        link.setShortCode(shortCode);
         link.setExpiresAt(expiresAt);
+        link.setIsActive(true);
+        link.setCreatedAt(LocalDateTime.now());
+        link.setUser(user);
         Link savedLink = linkRepository.save(link);
         statsService.createStatsForLink(savedLink);
         return savedLink;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional()
     public String findOriginalURLByShortCode(String shortCode) {
         Link link = linkRepository.findByShortCode(shortCode)
         .orElseThrow(() -> new NotFoundException("Link with this short code was not found."));
