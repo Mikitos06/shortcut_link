@@ -1,20 +1,19 @@
-FROM maven:3.9.8-eclipse-temurin-21 AS build
+FROM maven:3.8-openjdk-17 AS build
 
 WORKDIR /app
 
-COPY src /app/src
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-COPY pom.xml /app
+COPY src ./src
+RUN mvn package -DskipTests
 
-RUN mvn clean install -DskipTests
-
-FROM openjdk:21
-
-COPY --from=build /app/target/*.jar /app/app.jar
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
