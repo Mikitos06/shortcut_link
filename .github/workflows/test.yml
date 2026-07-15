@@ -18,5 +18,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
       - name: Run tests with Maven
-        run: mvn clean test
+        run: mvn -f backend/pom.xml clean test
