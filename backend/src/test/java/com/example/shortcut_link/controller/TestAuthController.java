@@ -4,6 +4,7 @@ import com.example.shortcut_link.DTO.LoginRequest;
 import com.example.shortcut_link.DTO.RegisterRequest;
 import com.example.shortcut_link.entity.User;
 import com.example.shortcut_link.exception.UserAlreadyExistsException;
+import com.example.shortcut_link.exception.UserUnauthorizedException;
 import com.example.shortcut_link.security.JwtAuthenticationFilter;
 import com.example.shortcut_link.security.JwtUtil;
 import com.example.shortcut_link.service.AuthService;
@@ -125,12 +126,12 @@ public class TestAuthController {
     @Test
     void testLogin_InvalidCredentials() throws Exception {
     when(authService.authenticate(anyString(), anyString()))
-            .thenThrow(new IllegalArgumentException("Invalid username or password"));
+            .thenThrow(new UserUnauthorizedException("Invalid username or password"));
 
     mockMvc.perform(post("/api/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginRequest)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isUnauthorized());
 
     verify(authService, times(1)).authenticate(anyString(), anyString());
     }
