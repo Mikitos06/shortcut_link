@@ -134,7 +134,7 @@ public class TestLinkController {
 
         mockMvc.perform(get("/r/INVALID"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/inactive"));
+                .andExpect(redirectedUrl("http://localhost:80/inactive"));
 
         verify(linkService, times(1)).findOriginalURLByShortCode("INVALID");
     }
@@ -146,7 +146,7 @@ public class TestLinkController {
 
         mockMvc.perform(get("/r/EXPIRED"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/inactive"));
+                .andExpect(redirectedUrl("http://localhost:80/inactive"));
 
         verify(linkService, times(1)).findOriginalURLByShortCode("EXPIRED");
     }
