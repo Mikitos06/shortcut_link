@@ -71,7 +71,6 @@ function Home() {
       setResult({
         shortUrl: response.data.linkURL,
         message: response.data.message,
-        expiresAt: response.data.link?.expiresAt || null,
       });
       loadLinks();
     } catch (error) {
