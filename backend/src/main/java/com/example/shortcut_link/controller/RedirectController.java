@@ -23,7 +23,7 @@ public class RedirectController {
             String originalURL = linkService.findOriginalURLByShortCode(shortCode);
             return new RedirectView(originalURL);
         } catch (Exception e) {
-            return new RedirectView("/inactive");
+             return new RedirectView("http://localhost:80/inactive");
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.shortcut_link.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,9 @@ public class LinkController {
     private final LinkService linkService;
     private final StatsService statsService;
 
+    @Value("${BASE_URL}")
+    private String baseUrl;
+
     public LinkController(LinkService linkService, StatsService statsService) {
         this.linkService = linkService;
         this.statsService = statsService;
@@ -43,7 +47,6 @@ public class LinkController {
         else{
             link = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
         }
-        String baseUrl = "http://localhost:8080/r/";
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new LinkResponse(link, "Link created successfully",baseUrl + link.getShortCode()));
     }
