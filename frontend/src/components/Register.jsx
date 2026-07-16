@@ -8,17 +8,77 @@ function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState('');
   const navigate = useNavigate();
+
+  const validatePassword = (pwd) => {
+    const errors = [];
+    if (!pwd) {
+      errors.push('Password cannot be empty');
+      return errors;
+    }
+    if (pwd.length < 8 || pwd.length > 32) {
+      errors.push('Password must be between 8 and 32 characters');
+    }
+    if (/\s/.test(pwd)) {
+      errors.push('Password cannot contain spaces');
+    }
+    const allowedChars = /^[A-Za-z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/;
+    if (!allowedChars.test(pwd)) {
+      errors.push(
+        'Password contains invalid characters. Only letters, numbers, and special characters !@#$%^&*()_+-=[]{}|;:\'",.<>/? are allowed'
+      );
+    }
+    if (!/[A-Za-z]/.test(pwd)) {
+      errors.push('Password must contain at least one letter');
+    }
+    if (!/\d/.test(pwd)) {
+      errors.push('Password must contain at least one digit');
+    }
+    if (!/[^A-Za-z0-9]/.test(pwd)) {
+      errors.push('Password must contain at least one special character');
+    }
+    return errors;
+  };
+
+  const updatePasswordErrors = (pwd, confirm) => {
+    const errors = [];
+
+    if (pwd && pwd.length > 0) {
+      const pwdErrors = validatePassword(pwd);
+      errors.push(...pwdErrors);
+    }
+    if (pwd && confirm && pwd !== confirm) {
+      errors.push('Passwords do not match');
+    }
+    setPasswordErrors(errors.join('; '));
+  };
+
+  const handlePasswordChange = (e) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    updatePasswordErrors(newPassword, confirmPassword);
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const newConfirm = e.target.value;
+    setConfirmPassword(newConfirm);
+    updatePasswordErrors(password, newConfirm);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setPasswordError('');
-
+    const errors = [];
+    const pwdErrors = validatePassword(password);
+    errors.push(...pwdErrors);
     if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match');
+      errors.push('Passwords do not match');
+    }
+    if (errors.length > 0) {
+      setPasswordErrors(errors.join('; '));
       return;
     }
+    setPasswordErrors('');
 
     try {
       await api.Auth.register({ username, email, password });
@@ -27,16 +87,6 @@ function Register() {
     } catch (error) {
       console.error('Registration error:', error.response?.data?.message || error.message);
     }
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    if (passwordError) setPasswordError('');
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
-    if (passwordError) setPasswordError('');
   };
 
   return (
@@ -111,9 +161,9 @@ function Register() {
             onChange={handleConfirmPasswordChange}
             required
           />
-          {passwordError && (
+          {passwordErrors && (
             <Alert severity="error" sx={{ mt: 1 }}>
-              {passwordError}
+              {passwordErrors}
             </Alert>
           )}
           <Button
