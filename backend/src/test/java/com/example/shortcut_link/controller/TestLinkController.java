@@ -77,7 +77,7 @@ public class TestLinkController {
     @Test
     @WithMockUser
     void testCreateLink_Success() throws Exception {
-        when(linkService.createLink(anyString(), any(LocalDateTime.class)))
+        when(linkService.createLink(anyString(),isNull(), any(LocalDateTime.class)))
                 .thenReturn(mockLink);
 
         mockMvc.perform(post("/api/links")
@@ -87,7 +87,7 @@ public class TestLinkController {
                 .andExpect(jsonPath("$.message").value("Link created successfully"))
                 .andExpect(jsonPath("$.linkURL").value("http://localhost:8080/r/ABC123"));
 
-        verify(linkService, times(1)).createLink(anyString(), any(LocalDateTime.class));
+        verify(linkService, times(1)).createLink(anyString(),isNull(), any(LocalDateTime.class));
     }
 
     @Test

@@ -40,37 +40,25 @@ public class LinkService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new NotFoundException("User not found"));
-        if (linkRepository.findByShortCode(shortCode).isPresent()) {
-        throw new ShortCodeAlreadyExistsException("Short code already exists: ");
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        String finalShortCode;
+        if (shortCode != null && !shortCode.isEmpty()) {
+            if (linkRepository.findByShortCode(shortCode).isPresent()) {
+                throw new ShortCodeAlreadyExistsException("Short code already exists: " + shortCode);
+            }
+            finalShortCode = shortCode;
+        } else {
+            String generated;
+            do {
+                generated = generateShortCode();
+            } while (linkRepository.findByShortCode(generated).isPresent());
+            finalShortCode = generated;
         }
 
         Link link = new Link();
         link.setOriginalURL(originalURL);
-        link.setShortCode(shortCode);
-        link.setExpiresAt(expiresAt);
-        link.setIsActive(true);
-        link.setCreatedAt(LocalDateTime.now());
-        link.setUser(user);
-        Link savedLink = linkRepository.save(link);
-        statsService.createStatsForLink(savedLink);
-        return savedLink;
-    }
-
-    @Transactional
-    public Link createLink(String originalURL,LocalDateTime expiresAt) {
-        String shortCode = generateShortCode();
-        while (linkRepository.findByShortCode(shortCode).isPresent()) {
-            shortCode = generateShortCode();
-        }
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
-        User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new NotFoundException("User not found"));
-
-        Link link = new Link();
-        link.setOriginalURL(originalURL);
-        link.setShortCode(shortCode);
+        link.setShortCode(finalShortCode);
         link.setExpiresAt(expiresAt);
         link.setIsActive(true);
         link.setCreatedAt(LocalDateTime.now());

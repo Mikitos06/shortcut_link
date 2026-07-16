@@ -45,7 +45,7 @@ public class LinkController {
             );
         }
         else{
-            link = linkService.createLink(request.getOriginalURL(), request.getExpiresAt());
+            link = linkService.createLink(request.getOriginalURL(), null,request.getExpiresAt());
         }
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(new LinkResponse(link, "Link created successfully",baseUrl + link.getShortCode()));
