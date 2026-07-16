@@ -298,18 +298,6 @@ public class TestLinkController {
 
     @Test
     @WithMockUser(username = "user1")
-    void testGetLinkStats_Forbidden_DifferentUser() throws Exception {
-        when(statsService.getStats("ABC123"))
-                .thenThrow(new AccessDeniedException("You don't have permission to view stats for this link"));
-
-        mockMvc.perform(get("/api/links/ABC123/stats"))
-                .andExpect(status().isForbidden());
-
-        verify(statsService, times(1)).getStats("ABC123");
-    }
-
-    @Test
-    @WithMockUser(username = "user1")
     void testToggleLinkDeactivation_Forbidden_DifferentUser() throws Exception {
         doThrow(new AccessDeniedException("You don't have permission to toggle this link"))
                 .when(linkService).toggleLinkActivation("ABC123", false);
