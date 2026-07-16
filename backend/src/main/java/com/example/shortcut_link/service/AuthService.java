@@ -1,6 +1,7 @@
 package com.example.shortcut_link.service;
 
 import com.example.shortcut_link.entity.User;
+import com.example.shortcut_link.exception.UserAlreadyExistsException;
 import com.example.shortcut_link.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,10 @@ public class AuthService {
 
     public User register(String username, String password, String email) {
         if (userRepository.existsByUsername(username)) {
-            throw new RuntimeException("Username already taken");
+            throw new UserAlreadyExistsException("Username already taken");
         }
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email already registered");
+            throw new UserAlreadyExistsException("Email already registered");
         }
         User user = new User();
         user.setUsername(username);

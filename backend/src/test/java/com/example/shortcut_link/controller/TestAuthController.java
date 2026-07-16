@@ -3,6 +3,7 @@ package com.example.shortcut_link.controller;
 import com.example.shortcut_link.DTO.LoginRequest;
 import com.example.shortcut_link.DTO.RegisterRequest;
 import com.example.shortcut_link.entity.User;
+import com.example.shortcut_link.exception.UserAlreadyExistsException;
 import com.example.shortcut_link.security.JwtAuthenticationFilter;
 import com.example.shortcut_link.security.JwtUtil;
 import com.example.shortcut_link.service.AuthService;
@@ -82,12 +83,12 @@ public class TestAuthController {
     @Test
     void testRegister_UsernameAlreadyExists() throws Exception {
         when(authService.register(anyString(), anyString(), anyString()))
-                .thenThrow(new RuntimeException("Username already taken"));
+                .thenThrow(new UserAlreadyExistsException("Username already taken"));
 
         mockMvc.perform(post("/api/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict());
 
         verify(authService, times(1)).register(anyString(), anyString(), anyString());
     }
@@ -95,12 +96,12 @@ public class TestAuthController {
     @Test
     void testRegister_EmailAlreadyExists() throws Exception {
         when(authService.register(anyString(), anyString(), anyString()))
-                .thenThrow(new RuntimeException("Email already registered"));
+                .thenThrow(new UserAlreadyExistsException("Email already registered"));
 
         mockMvc.perform(post("/api/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isConflict());
 
         verify(authService, times(1)).register(anyString(), anyString(), anyString());
     }
