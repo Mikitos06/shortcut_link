@@ -1,6 +1,8 @@
 package com.example.shortcut_link.controller;
 
 import com.example.shortcut_link.service.LinkService;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,9 @@ public class RedirectController {
 
     private final LinkService linkService;
 
+    @Value("${FRONTEND_URL}")
+    private String frontUrl;
+
     public RedirectController(LinkService linkService) {
         this.linkService = linkService;
     }
@@ -23,7 +28,7 @@ public class RedirectController {
             String originalURL = linkService.findOriginalURLByShortCode(shortCode);
             return new RedirectView(originalURL);
         } catch (Exception e) {
-             return new RedirectView("http://localhost:80/inactive");
+             return new RedirectView(frontUrl+"/inactive");
         }
     }
 }
