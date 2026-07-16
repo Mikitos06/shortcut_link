@@ -1,5 +1,6 @@
 package com.example.shortcut_link.controller;
 
+import org.springframework.security.access.AccessDeniedException;
 import com.example.shortcut_link.DTO.LinkRequest;
 import com.example.shortcut_link.DTO.StatsResponse;
 import com.example.shortcut_link.entity.Link;
@@ -269,5 +270,53 @@ public class TestLinkController {
                 .andExpect(status().isConflict());
 
         verify(linkService, times(2)).createLink(anyString(), eq("CODE"), any(LocalDateTime.class));
+    }
+
+    @Test
+    @WithMockUser(username = "user1")
+    void testDeleteLink_Forbidden_DifferentUser() throws Exception {
+        doThrow(new AccessDeniedException("You don't have permission to delete this link"))
+                .when(linkService).deleteLink("ABC123");
+
+        mockMvc.perform(delete("/api/links/ABC123"))
+                .andExpect(status().isForbidden());
+
+        verify(linkService, times(1)).deleteLink("ABC123");
+    }
+
+    @Test
+    @WithMockUser(username = "user1")
+    void testToggleLinkActivation_Forbidden_DifferentUser() throws Exception {
+        doThrow(new AccessDeniedException("You don't have permission to toggle this link"))
+                .when(linkService).toggleLinkActivation("ABC123", true);
+
+        mockMvc.perform(patch("/api/links/ABC123/toggle?active=true"))
+                .andExpect(status().isForbidden());
+
+        verify(linkService, times(1)).toggleLinkActivation("ABC123", true);
+    }
+
+    @Test
+    @WithMockUser(username = "user1")
+    void testGetLinkStats_Forbidden_DifferentUser() throws Exception {
+        when(statsService.getStats("ABC123"))
+                .thenThrow(new AccessDeniedException("You don't have permission to view stats for this link"));
+
+        mockMvc.perform(get("/api/links/ABC123/stats"))
+                .andExpect(status().isForbidden());
+
+        verify(statsService, times(1)).getStats("ABC123");
+    }
+
+    @Test
+    @WithMockUser(username = "user1")
+    void testToggleLinkDeactivation_Forbidden_DifferentUser() throws Exception {
+        doThrow(new AccessDeniedException("You don't have permission to toggle this link"))
+                .when(linkService).toggleLinkActivation("ABC123", false);
+
+        mockMvc.perform(patch("/api/links/ABC123/toggle?active=false"))
+                .andExpect(status().isForbidden());
+
+        verify(linkService, times(1)).toggleLinkActivation("ABC123", false);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.shortcut_link.service;
 
-
+import org.springframework.security.access.AccessDeniedException;
 import com.example.shortcut_link.DTO.LinkListResponse;
 import com.example.shortcut_link.entity.Link;
 import com.example.shortcut_link.entity.Stats;
@@ -40,7 +40,7 @@ public class LinkService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new NotFoundException("User not found"));
         if (linkRepository.findByShortCode(shortCode).isPresent()) {
         throw new ShortCodeAlreadyExistsException("Short code already exists: ");
         }
@@ -66,7 +66,7 @@ public class LinkService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
         User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new NotFoundException("User not found"));
 
         Link link = new Link();
         link.setOriginalURL(originalURL);
@@ -119,7 +119,7 @@ public class LinkService {
     }
     String currentUsername = auth.getName();
     if (link.getUser() == null || !link.getUser().getUsername().equals(currentUsername)) {
-        throw new RuntimeException("You do not have permission to modify this link"); 
+        throw new AccessDeniedException("You do not have permission to modify this link"); 
     }
     return link;
     }
